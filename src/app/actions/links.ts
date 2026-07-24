@@ -83,6 +83,15 @@ export async function addLink(_state: AddLinkState, formData: FormData): Promise
     console.error('metadata fetch failed for', url, err)
   }
 
+  // Nothing worth tagging (metadata fetch failed entirely) — skip the AI
+  // call rather than let it invent tags from a placeholder string.
+  if (!metadata?.title && !metadata?.caption) {
+    await supabase.from('links').update({ status: 'error' }).eq('id', inserted.id)
+    revalidatePath('/library')
+    revalidatePath('/library/folders')
+    return undefined
+  }
+
   try {
     const enrichment = await enrichLink({
       title: metadata?.title ?? null,
