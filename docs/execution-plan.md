@@ -45,10 +45,10 @@ Each phase should leave you with something working, not just scaffolding.
 - `share_target` in the manifest + `/share-target` route parses whatever field (`url`/`text`/`title`) actually contains the link — needed since Instagram's share sheet puts the URL inside `text`, not `url`
 - **Milestone: one-tap save from Instagram on Android — verified working.**
 
-## Phase 7 — iOS Shortcut (not started)
-- Build a Shortcuts recipe that POSTs a shared URL to an authenticated LinkVault API endpoint
-- Document the install steps (Shortcuts can be shared via a link)
-- **Milestone: one-tap save from Instagram on iOS.**
+## Phase 7 — iOS Shortcut ✅
+- Personal API tokens (hashed at rest, `/library/settings` to generate/revoke) authenticate a Shortcuts "Get Contents of URL" action against `/api/save`, since Shortcuts has no browser session to reuse
+- Setup instructions live on the settings page itself, with the correct endpoint URL for wherever the app is deployed
+- **Milestone: verified end-to-end via a raw API call — token auth, save, scrape, AI-tag all confirmed working. Building the actual Shortcut in the iOS Shortcuts app is a manual step you do on your phone, following the settings-page instructions.**
 
 ## v2 (later, not now)
 - Manual video upload → frame extraction (ffmpeg) → Claude vision on frames → deeper content analysis
