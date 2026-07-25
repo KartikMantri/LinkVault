@@ -1,4 +1,5 @@
 import * as cheerio from 'cheerio'
+import { safeFetchHtml } from '@/lib/safe-fetch'
 
 export type LinkSource = 'instagram' | 'whatsapp_web' | 'youtube' | 'other'
 
@@ -29,21 +30,7 @@ function safeHostname(url: string): string | null {
 // scraping (Instagram in particular) may return partial or no metadata —
 // that's expected, the link is still saved with status "error" and just the raw URL.
 export async function fetchMetadata(url: string): Promise<FetchedMetadata> {
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent':
-        'Mozilla/5.0 (compatible; LinkVaultBot/1.0; +https://linkvault.app)',
-      Accept: 'text/html',
-    },
-    redirect: 'follow',
-    signal: AbortSignal.timeout(8000),
-  })
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch ${url}: ${res.status}`)
-  }
-
-  const html = await res.text()
+  const { html } = await safeFetchHtml(url)
   const $ = cheerio.load(html)
 
   const og = (prop: string) => $(`meta[property="${prop}"]`).attr('content') ?? null
