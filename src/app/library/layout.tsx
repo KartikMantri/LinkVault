@@ -20,6 +20,9 @@ export default function LibraryLayout({ children }: { children: React.ReactNode 
         <Link href="/library/folders" className="pb-2 hover:text-black">
           Folders
         </Link>
+        <Link href="/library/settings" className="pb-2 hover:text-black">
+          Settings
+        </Link>
       </nav>
 
       {children}
