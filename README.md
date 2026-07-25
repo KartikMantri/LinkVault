@@ -96,3 +96,7 @@ docs/
 ## A note on this codebase
 
 This project runs on a Next.js version with breaking changes from the training data most AI coding assistants were trained on — `middleware.ts` is renamed to `proxy.ts`, `params`/`searchParams` are async, and so on. If you're using an AI assistant to work on this repo, point it at `node_modules/next/dist/docs/` before it writes code.
+
+## License
+
+[MIT](LICENSE)
