@@ -108,3 +108,7 @@ Found a security issue? Please report it via GitHub's [Security Advisories](../.
 ## License
 
 [MIT](LICENSE)
+
+---
+
+Built by Kartik Mantri

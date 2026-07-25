@@ -26,6 +26,8 @@ export default function LibraryLayout({ children }: { children: React.ReactNode 
       </nav>
 
       {children}
+
+      <footer className="mt-4 text-center text-xs text-gray-400">Built by Kartik Mantri</footer>
     </div>
   )
 }
