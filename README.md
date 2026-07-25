@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LinkVault
 
-## Getting Started
+A personal link-saving app that actually organizes what you save — instead of a WhatsApp "saved messages" thread you never revisit. Paste a link (or share it from Instagram/iOS), and it gets scraped, AI-tagged, and filed into a folder automatically.
 
-First, run the development server:
+## Features
+
+- **Save from anywhere** — paste a URL in the app, share directly from Instagram on Android, or use an iOS Shortcut. All three paths save instantly and finish tagging in the background.
+- **AI tagging** — every saved link gets a one-line summary, a category, and tags, generated from its scraped title/caption (Groq, Llama 3.3 70B).
+- **Nested folders** — unlimited depth, with a "Recent" flat feed alongside your manually organized hierarchy. Instagram links auto-file into an "Instagram" folder.
+- **Search & filter** — across titles, captions, and AI summaries; filter by source.
+- **Installable PWA** — add to your home screen on Android or iOS, no app store.
+- **Multi-user, secure by default** — Supabase Auth + Postgres Row Level Security means your data is isolated at the database layer, not just app code.
+
+See [`docs/features.md`](docs/features.md) for the full feature-by-feature implementation reference.
+
+## Tech stack
+
+Next.js 16 (App Router) · Supabase (Postgres + Auth + RLS) · Groq (Llama 3.3 70B) · Tailwind CSS · deployed on Vercel
+
+Full reasoning behind each choice: [`docs/tech-stack.md`](docs/tech-stack.md).
+
+## Getting started
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/KartikMantri/LinkVault.git
+cd LinkVault
+npm install
+```
+
+### 2. Set up Supabase
+
+Create a project at [supabase.com](https://supabase.com), then run the schema in the SQL Editor:
+
+```bash
+supabase/schema.sql
+```
+
+(If you're updating an existing project rather than starting fresh, the individual `supabase/migration_*.sql` files apply the same changes incrementally.)
+
+### 3. Configure environment variables
+
+```bash
+cp .env.local.example .env.local
+```
+
+Fill in:
+
+| Variable | Where to find it |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Settings → API |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Settings → API (publishable/anon key) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API (secret — needed for the iOS Shortcut endpoint, which has no browser session) |
+| `GROQ_API_KEY` | [console.groq.com/keys](https://console.groq.com/keys) |
+
+### 4. Run it
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000), sign up, and start saving links.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 5. Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Push to GitHub, import the repo in Vercel, and add the same four environment variables in Project Settings → Environment Variables. No other configuration needed — Vercel auto-detects Next.js.
 
-## Learn More
+## Project structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+  app/
+    actions/          Server Actions (auth, links, folders, tokens)
+    api/save/          Bearer-token-authenticated endpoint (iOS Shortcut)
+    library/           Recent view, folder browsing, settings
+    share-target/       Android Share Target handler
+    manifest.ts         PWA manifest
+    icon*.tsx           Generated app icons (next/og, no binary assets)
+  components/          Client components (forms, cards, token UI)
+  lib/                 Shared logic: metadata scraping, AI enrichment,
+                       folder tree helpers, Supabase clients, save pipeline
+  proxy.ts             Auth guard (Next.js's renamed middleware.ts)
+supabase/
+  schema.sql           Full schema for a fresh project
+  migration_*.sql       Incremental migrations for an existing project
+docs/
+  features.md           Feature-by-feature implementation reference
+  design.md              Data model & screens
+  tech-stack.md           Stack choices & reasoning
+  execution-plan.md        Build history, phase by phase
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## A note on this codebase
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project runs on a Next.js version with breaking changes from the training data most AI coding assistants were trained on — `middleware.ts` is renamed to `proxy.ts`, `params`/`searchParams` are async, and so on. If you're using an AI assistant to work on this repo, point it at `node_modules/next/dist/docs/` before it writes code.
