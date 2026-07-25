@@ -1,3 +1,4 @@
+import { after } from 'next/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { detectSource, fetchMetadata } from '@/lib/metadata'
 import { enrichLink } from '@/lib/ai/enrich'
@@ -11,8 +12,10 @@ const AUTO_FOLDER_BY_SOURCE: Partial<Record<string, string>> = {
 
 export type SaveLinkResult = { ok: true } | { ok: false; error: string }
 
-// Shared by the manual Add Link form and the Android share-target handler
-// so both paths get metadata scraping, AI tagging, and auto-routing for free.
+// Shared by the manual Add Link form, the Android share-target handler, and
+// the iOS Shortcut endpoint. Only the row insert blocks the response —
+// scraping and AI tagging happen in `after()`, scheduled post-response, so
+// Save feels instant instead of waiting 2-5s on a scrape + Groq round trip.
 export async function saveLink(
   supabase: SupabaseClient,
   userId: string,
@@ -48,11 +51,17 @@ export async function saveLink(
     return { ok: false, error: 'Could not save the link. Try again.' }
   }
 
+  after(() => enrichLinkRow(supabase, inserted.id, input.url))
+
+  return { ok: true }
+}
+
+async function enrichLinkRow(supabase: SupabaseClient, linkId: string, url: string) {
   // Metadata and AI enrichment fail independently so a Groq error (or an
   // unscrapeable page) never discards metadata that was fetched successfully.
   let metadata: Awaited<ReturnType<typeof fetchMetadata>> | null = null
   try {
-    metadata = await fetchMetadata(input.url)
+    metadata = await fetchMetadata(url)
     await supabase
       .from('links')
       .update({
@@ -60,16 +69,16 @@ export async function saveLink(
         caption: metadata.caption,
         thumbnail_url: metadata.thumbnailUrl,
       })
-      .eq('id', inserted.id)
+      .eq('id', linkId)
   } catch (err) {
-    console.error('metadata fetch failed for', input.url, err)
+    console.error('metadata fetch failed for', url, err)
   }
 
   // Nothing worth tagging (metadata fetch failed entirely) — skip the AI
   // call rather than let it invent tags from a placeholder string.
   if (!metadata?.title && !metadata?.caption) {
-    await supabase.from('links').update({ status: 'error' }).eq('id', inserted.id)
-    return { ok: true }
+    await supabase.from('links').update({ status: 'error' }).eq('id', linkId)
+    return
   }
 
   try {
@@ -87,11 +96,9 @@ export async function saveLink(
         ai_tags: enrichment.tags,
         status: 'processed',
       })
-      .eq('id', inserted.id)
+      .eq('id', linkId)
   } catch (err) {
-    console.error('AI enrichment failed for', input.url, err)
-    await supabase.from('links').update({ status: 'error' }).eq('id', inserted.id)
+    console.error('AI enrichment failed for', url, err)
+    await supabase.from('links').update({ status: 'error' }).eq('id', linkId)
   }
-
-  return { ok: true }
 }

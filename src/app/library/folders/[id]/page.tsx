@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { CreateFolderForm } from '@/components/CreateFolderForm'
 import { FolderListItem } from '@/components/FolderListItem'
 import { LinkCard, type LinkRow } from '@/components/LinkCard'
+import { PendingAutoRefresh } from '@/components/PendingAutoRefresh'
 import { breadcrumbFor, type FolderRow } from '@/lib/folders'
 
 export default async function FolderDetailPage({
@@ -32,9 +33,11 @@ export default async function FolderDetailPage({
 
   const trail = breadcrumbFor(folders, id)
   const subfolders = folders.filter((f) => f.parent_id === id)
+  const hasPending = (links ?? []).some((link) => link.status === 'pending')
 
   return (
     <div className="flex flex-col gap-6">
+      <PendingAutoRefresh hasPending={hasPending} />
       <div className="flex flex-wrap items-center gap-1 text-sm text-gray-500">
         <Link href="/library/folders" className="hover:underline">
           Folders

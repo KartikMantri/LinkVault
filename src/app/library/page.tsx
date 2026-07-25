@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { AddLinkForm } from '@/components/AddLinkForm'
 import { LinkCard, type LinkRow } from '@/components/LinkCard'
+import { PendingAutoRefresh } from '@/components/PendingAutoRefresh'
 import type { FolderRow } from '@/lib/folders'
 
 const SOURCES = ['instagram', 'whatsapp_web', 'youtube', 'other'] as const
@@ -32,8 +33,11 @@ export default async function LibraryPage({
     supabase.from('folders').select('id, name, parent_id').order('name'),
   ])
 
+  const hasPending = (links ?? []).some((link) => link.status === 'pending')
+
   return (
     <>
+      <PendingAutoRefresh hasPending={hasPending} />
       <AddLinkForm />
 
       <form className="flex flex-wrap gap-2" action="/library">
