@@ -2,44 +2,50 @@
 
 Each phase should leave you with something working, not just scaffolding.
 
-## Phase 0 — Accounts & setup
-- Sign up: Vercel, Supabase, Anthropic (you do this — see tech-stack.md)
+## Phase 0 — Accounts & setup ✅
+- Sign up: Vercel, Supabase, Groq (you do this — see tech-stack.md)
 - Scaffold Next.js app in `D:\LinkVault`
 - Create Supabase project, get URL + anon key
-- Get Anthropic API key
-- `.env.local` with all three
+- Get Groq API key
+- `.env.local` with all keys
 
-## Phase 1 — Data layer
+## Phase 1 — Data layer ✅
 - Create `links` table in Supabase (schema per design.md)
 - Connect Next.js to Supabase client
 - Verify: can insert/read a row manually via a test script
 
-## Phase 2 — Manual capture (core loop, no AI yet)
+## Phase 2 — Manual capture (core loop, no AI yet) ✅
 - "Add Link" form → paste URL → server action fetches OG metadata → saves row
 - Library page lists saved links (title, thumbnail, source)
 - **Milestone: you can paste a link and see it appear in a list.** This alone is already more useful than WhatsApp Saved Messages.
 
-## Phase 3 — AI enrichment
-- On save, call Claude with caption + thumbnail → summary/category/tags
+## Phase 3 — AI enrichment ✅
+- On save, call Groq (Llama 3.3 70B, text-only) with title + caption → summary/category/tags
 - Update the record once processing completes
-- Handle failure gracefully (link still saved, just unprocessed)
+- Handle failure gracefully (link still saved, just unprocessed — and skipped entirely rather than tagging garbage if there's no scraped content at all)
 - **Milestone: saved links show an AI summary and category automatically.**
 
-## Phase 4 — Library UX
-- Search (title/caption/summary/tags)
-- Filter by source and category
-- Link detail view, edit note, delete
+## Phase 3.5 — Nested folders ✅ (added mid-build, not in original plan)
+- Unlimited-depth folders, breadcrumb navigation, move-to-folder from any view
+- Source-based auto-routing (Instagram links auto-file into an "Instagram" folder)
+- Deleting a folder cascades subfolders but only ever unfiles links, never deletes them
+
+## Phase 4 — Library UX ✅
+- Search (title/caption/summary)
+- Filter by source
+- Delete link
 - **Milestone: the app is actually usable day-to-day for manually pasted links.**
 
-## Phase 5 — PWA basics
-- `manifest.json`, icons, installable to home screen
-- Basic offline shell (optional, low priority)
+## Phase 5 — PWA basics ✅
+- `app/manifest.ts`, generated icons (favicon, apple-touch-icon, 192/512 install icons) via `next/og`
+- Installable to home screen on Android and iOS
+- Basic offline shell — not done (low priority, skipped)
 
-## Phase 6 — Android Share Target
-- Wire up Web Share Target API so "Share → LinkVault" works from Instagram/WhatsApp
-- **Milestone: one-tap save from Instagram on Android.**
+## Phase 6 — Android Share Target ✅
+- `share_target` in the manifest + `/share-target` route parses whatever field (`url`/`text`/`title`) actually contains the link — needed since Instagram's share sheet puts the URL inside `text`, not `url`
+- **Milestone: one-tap save from Instagram on Android — verified working.**
 
-## Phase 7 — iOS Shortcut
+## Phase 7 — iOS Shortcut (not started)
 - Build a Shortcuts recipe that POSTs a shared URL to an authenticated LinkVault API endpoint
 - Document the install steps (Shortcuts can be shared via a link)
 - **Milestone: one-tap save from Instagram on iOS.**
@@ -48,8 +54,4 @@ Each phase should leave you with something working, not just scaffolding.
 - Manual video upload → frame extraction (ffmpeg) → Claude vision on frames → deeper content analysis
 - WhatsApp Business API bot for zero-tap capture
 - Weekly digest email/notification surfacing a handful of saved-but-unrevisited links
-- Collections (manual curation on top of AI categories)
-
-## Suggested build order for our sessions
-
-Phases 0–2 first (get the core loop working end to end before any AI or polish) → Phase 3 (AI is the payoff moment) → Phase 4 (make it pleasant to use) → Phases 5–7 (capture automation, once the core product is proven useful to you).
+- Rename folder / edit note & category after save
