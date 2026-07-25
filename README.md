@@ -9,6 +9,7 @@ A personal link-saving app that actually organizes what you save — instead of 
 - **Nested folders** — unlimited depth, with a "Recent" flat feed alongside your manually organized hierarchy. Instagram links auto-file into an "Instagram" folder.
 - **Search & filter** — across titles, captions, and AI summaries; filter by source.
 - **Installable PWA** — add to your home screen on Android or iOS, no app store.
+- **Browser extension** — save the current tab (or right-click any link) from a desktop browser, no app store either. See [`browser-extension/`](browser-extension/).
 - **Multi-user, secure by default** — Supabase Auth + Postgres Row Level Security means your data is isolated at the database layer, not just app code.
 
 See [`docs/features.md`](docs/features.md) for the full feature-by-feature implementation reference.
@@ -81,6 +82,7 @@ src/
   lib/                 Shared logic: metadata scraping, AI enrichment,
                        folder tree helpers, Supabase clients, save pipeline
   proxy.ts             Auth guard (Next.js's renamed middleware.ts)
+browser-extension/    Manifest V3 extension — save the current tab from desktop
 supabase/
   schema.sql           Full schema for a fresh project
   migration_*.sql       Incremental migrations for an existing project
